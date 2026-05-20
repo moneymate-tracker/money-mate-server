@@ -6,6 +6,7 @@ import {
   verifyEmail,
   refreshAccessToken,
   forgotPasswordRequest,
+  showResetPasswordPage,
   resetForgotPassword,
   getCurrentUser,
   changeCurrentPassword,
@@ -33,6 +34,7 @@ router.route("/refresh-token").post(refreshAccessToken);
 router
   .route("/forgot-password")
   .post(userForgotPasswordValidator(), validate, forgotPasswordRequest);
+router.route("/reset-password/:resetToken").get(showResetPasswordPage);
 router
   .route("/reset-password/:resetToken")
   .post(userResetForgotPasswordValidator(), validate, resetForgotPassword);
