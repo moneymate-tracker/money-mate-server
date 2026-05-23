@@ -57,6 +57,18 @@ const userSchema = new Schema(
     emailVerificationExpiry: {
       type: Date,
     },
+    phone: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    currency: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      default: "USD",
+      enum: ["USD", "EUR", "GBP", "PKR", "INR", "AED", "SAR", "CAD", "AUD"],
+    },
   },
   {
     timestamps: true,

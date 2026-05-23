@@ -1,0 +1,624 @@
+{
+  "info": {
+    "name": "MoneyMate API",
+    "_postman_id": "moneymate-api-collection",
+    "description": "Complete API collection for MoneyMate — Student Budget Tracker\n\n**Setup:**\n1. Set collection variable `baseUrl` to your server (default: http://localhost:3000)\n2. Register or login — the collection auto-saves `accessToken` and `refreshToken` from login/register responses\n3. All protected routes use `{{accessToken}}` automatically\n\n**Demo login (after running `npm run seed`):**\n- Email: demo@moneymate.com\n- Password: Demo@1234",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",       "value": "http://localhost:3000",  "type": "string" },
+    { "key": "accessToken",   "value": "",                       "type": "string" },
+    { "key": "refreshToken",  "value": "",                       "type": "string" },
+    { "key": "categoryId",    "value": "",                       "type": "string" },
+    { "key": "transactionId", "value": "",                       "type": "string" },
+    { "key": "budgetId",      "value": "",                       "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"fullname\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Test@1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","register"] }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                  "  console.log('✅ Tokens saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo@moneymate.com\",\n  \"password\": \"Demo@1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/logout", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","logout"] }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/current-user", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","current-user"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/refresh-token", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","refresh-token"] }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","forgot-password"] }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"NewPass@1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/reset-password/:resetToken", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","reset-password",":resetToken"], "variable": [{ "key": "resetToken", "value": "PASTE_TOKEN_FROM_EMAIL" }] }
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/verify-email/:verificationToken", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","verify-email",":verificationToken"], "variable": [{ "key": "verificationToken", "value": "PASTE_TOKEN_FROM_EMAIL" }] }
+          }
+        },
+        {
+          "name": "Resend Email Verification",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/resend-email-verification", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","resend-email-verification"] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"Test@1234\",\n  \"newPassword\": \"NewPass@1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/change-password", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","change-password"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/profile", "host": ["{{baseUrl}}"], "path": ["api","v1","profile"] }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Alex Johnson\",\n  \"phone\": \"+1234567890\",\n  \"currency\": \"USD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/profile", "host": ["{{baseUrl}}"], "path": ["api","v1","profile"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏷️ Categories",
+      "item": [
+        {
+          "name": "Get All Categories (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.categories && res.data.categories.length > 0) {",
+                  "  pm.collectionVariables.set('categoryId', res.data.categories[0]._id);",
+                  "  console.log('categoryId saved:', res.data.categories[0]._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/categories", "host": ["{{baseUrl}}"], "path": ["api","v1","categories"] }
+          }
+        },
+        {
+          "name": "Get All Categories (Authenticated)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/categories", "host": ["{{baseUrl}}"], "path": ["api","v1","categories"] }
+          }
+        },
+        {
+          "name": "Create Custom Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.category) {",
+                  "  pm.collectionVariables.set('categoryId', res.data.category._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pets\",\n  \"icon\": \"paw-outline\",\n  \"color\": \"#FF9500\",\n  \"bg\": \"#FFF3E0\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/categories", "host": ["{{baseUrl}}"], "path": ["api","v1","categories"] }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pets & Animals\",\n  \"color\": \"#FF6D00\",\n  \"bg\": \"#FFF8F0\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","categories","{{categoryId}}"] }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","categories","{{categoryId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💸 Transactions",
+      "item": [
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transactions?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","transactions"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "type",  "value": "", "disabled": true, "description": "expense | income" },
+                { "key": "month", "value": "", "disabled": true, "description": "1–12" },
+                { "key": "year",  "value": "", "disabled": true, "description": "e.g. 2024" },
+                { "key": "categoryId", "value": "", "disabled": true },
+                { "key": "search", "value": "", "disabled": true, "description": "Search by description" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Transactions — April 2024 Expenses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transactions?type=expense&month=4&year=2024",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","transactions"],
+              "query": [
+                { "key": "type",  "value": "expense" },
+                { "key": "month", "value": "4" },
+                { "key": "year",  "value": "2024" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Transactions — April 2024 Income",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transactions?type=income&month=4&year=2024",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","transactions"],
+              "query": [
+                { "key": "type",  "value": "income" },
+                { "key": "month", "value": "4" },
+                { "key": "year",  "value": "2024" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Expense Transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.transaction) {",
+                  "  pm.collectionVariables.set('transactionId', res.data.transaction._id);",
+                  "  console.log('transactionId saved:', res.data.transaction._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"expense\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"amount\": 45.50,\n  \"description\": \"Lunch at Chipotle\",\n  \"date\": \"2024-04-18\",\n  \"month\": 4,\n  \"year\": 2024\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/transactions", "host": ["{{baseUrl}}"], "path": ["api","v1","transactions"] }
+          }
+        },
+        {
+          "name": "Create Income Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"income\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"amount\": 3500,\n  \"description\": \"Monthly Salary\",\n  \"date\": \"2024-04-01\",\n  \"month\": 4,\n  \"year\": 2024\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/transactions", "host": ["{{baseUrl}}"], "path": ["api","v1","transactions"] }
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/transactions/{{transactionId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","transactions","{{transactionId}}"] }
+          }
+        },
+        {
+          "name": "Update Transaction",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50.00,\n  \"description\": \"Lunch at Chipotle (updated)\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/transactions/{{transactionId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","transactions","{{transactionId}}"] }
+          }
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/transactions/{{transactionId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","transactions","{{transactionId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Budgets",
+      "item": [
+        {
+          "name": "Get Budgets — April 2024",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/budgets?month=4&year=2024",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","budgets"],
+              "query": [
+                { "key": "month", "value": "4" },
+                { "key": "year",  "value": "2024" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Budgets — March 2024",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/budgets?month=3&year=2024",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","budgets"],
+              "query": [
+                { "key": "month", "value": "3" },
+                { "key": "year",  "value": "2024" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Budget",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.budget) {",
+                  "  pm.collectionVariables.set('budgetId', res.data.budget._id);",
+                  "  console.log('budgetId saved:', res.data.budget._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"budget\": 300,\n  \"month\": 5,\n  \"year\": 2024\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/budgets", "host": ["{{baseUrl}}"], "path": ["api","v1","budgets"] }
+          }
+        },
+        {
+          "name": "Update Budget",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"budget\": 350\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/budgets/{{budgetId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","budgets","{{budgetId}}"] }
+          }
+        },
+        {
+          "name": "Delete Budget",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/budgets/{{budgetId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","budgets","{{budgetId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📈 Analytics",
+      "item": [
+        {
+          "name": "Monthly Summary — April 2024",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/summary?month=4&year=2024",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","analytics","summary"],
+              "query": [
+                { "key": "month", "value": "4" },
+                { "key": "year",  "value": "2024" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Monthly Summary — March 2024",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/summary?month=3&year=2024",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","analytics","summary"],
+              "query": [
+                { "key": "month", "value": "3" },
+                { "key": "year",  "value": "2024" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Monthly Trend — Last 6 Months",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/monthly-trend?months=6",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","analytics","monthly-trend"],
+              "query": [
+                { "key": "months", "value": "6", "description": "Number of months (1–12, default 6)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Monthly Trend — Last 3 Months",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/monthly-trend?months=3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","analytics","monthly-trend"],
+              "query": [{ "key": "months", "value": "3" }]
+            }
+          }
+        },
+        {
+          "name": "Category Breakdown — April 2024 Expenses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/category-breakdown?month=4&year=2024&type=expense",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","analytics","category-breakdown"],
+              "query": [
+                { "key": "month", "value": "4" },
+                { "key": "year",  "value": "2024" },
+                { "key": "type",  "value": "expense", "description": "expense | income" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Category Breakdown — April 2024 Income",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/category-breakdown?month=4&year=2024&type=income",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","analytics","category-breakdown"],
+              "query": [
+                { "key": "month", "value": "4" },
+                { "key": "year",  "value": "2024" },
+                { "key": "type",  "value": "income" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "❤️ Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/healthcheck", "host": ["{{baseUrl}}"], "path": ["api","v1","healthcheck"] }
+          }
+        }
+      ]
+    }
+  ]
+}
